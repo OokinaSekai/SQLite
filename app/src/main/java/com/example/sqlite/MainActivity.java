@@ -28,7 +28,6 @@ public class MainActivity extends AppCompatActivity {
         EditText number=(EditText) findViewById(R.id.number);
         TextView text=(TextView) findViewById(R.id.message);
         String str1,str2,str3;
-        int int3;
         str1=name.getText().toString();
         str2=email.getText().toString();
         str3=number.getText().toString();
@@ -38,22 +37,27 @@ public class MainActivity extends AppCompatActivity {
             ts.show();
         }
         else {
-            int3 = Integer.parseInt(str3);
-            SQLiteDatabase db = DB.getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put("name", str1);
-            values.put("email", str2);
-            values.put("number", int3);
-            long id = db.insert("user_m", null, values);
-            db.close();
-            Toast ts = Toast.makeText(getBaseContext(),"success!",Toast.LENGTH_LONG);
-            ts.show();
+            try {
+                SQLiteDatabase db = DB.getWritableDatabase();
+                ContentValues values = new ContentValues();
+                values.put("name", str1);
+                values.put("email", str2);
+                values.put("number", str3);
+                long id = db.insert("user_m", null, values);
+                db.close();
+                Toast ts = Toast.makeText(getBaseContext(),"success!",Toast.LENGTH_LONG);
+                ts.show();
+            } catch (NumberFormatException e) {
+                Toast ts = Toast.makeText(getBaseContext(),"please check input!",Toast.LENGTH_LONG);
+                ts.show();
+            }
+
         }
     }
 
     public void click_read(View v)
     {
-        String str="name:";
+        String str="";
         TextView text=(TextView) findViewById(R.id.message);
         SQLiteDatabase db = DB.getReadableDatabase();
         Cursor cursor=db.rawQuery("select * from user_m",null);
@@ -61,15 +65,17 @@ public class MainActivity extends AppCompatActivity {
         {
             while(cursor.moveToNext())
             {
+                str=str+"name:";
                 str=str+cursor.getString(0);
-                str=str+",email:";
+                str=str+", email:";
                 str=str+cursor.getString(1);
-                str=str+",phone number:";
+                str=str+", phone number:";
                 str=str+cursor.getString(2);
-                str=str+"\n"+"name:";
-
+                str=str+"\n";
             }
         }
+        else
+            str="###############"+"\n"+"Opps! nothing here"+"\n"+"###############";
         text.setText(str);
         cursor.close();
         db.close();
@@ -93,12 +99,27 @@ public class MainActivity extends AppCompatActivity {
         }
         else
         {
-
+            try {
+                SQLiteDatabase db = DB.getReadableDatabase();
+                ContentValues newValues = new ContentValues();
+                String strFilter = "number=" + str3;
+                newValues.put("name", str1);
+                newValues.put("email", str2);
+                db.update("user_m", newValues, strFilter, null);
+            } catch (NumberFormatException e) {
+                Toast ts = Toast.makeText(getBaseContext(),"please check input!",Toast.LENGTH_LONG);
+                ts.show();
+            }
+            Toast ts = Toast.makeText(getBaseContext(),"success!",Toast.LENGTH_LONG);
+            ts.show();
         }
+
     }
 
     public void click_remove(View v)
     {
-        SQLiteDatabase db = DB.getWritableDatabase();
+        DB.getWritableDatabase().execSQL("delete from "+ "user_m");
+        Toast ts = Toast.makeText(getBaseContext(),"clear success!",Toast.LENGTH_LONG);
+        ts.show();
     }
 }
